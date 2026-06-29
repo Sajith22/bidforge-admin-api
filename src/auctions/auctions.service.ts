@@ -1,14 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { FirebaseService } from '../firebase/firebase.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AuctionsService {
   private readonly logger = new Logger(AuctionsService.name);
 
-  constructor(private readonly firebaseService: FirebaseService) {}
+  constructor(
+    private readonly firebaseService: FirebaseService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
-  // Runs every minute, completely independent of whether any app is open
   @Cron(CronExpression.EVERY_MINUTE)
   async closeExpiredAuctions() {
     const db = this.firebaseService.firestore;
@@ -24,7 +27,6 @@ export class AuctionsService {
     for (const doc of snapshot.docs) {
       const product = doc.data();
 
-      // Already finalized — skip
       if (product.winnerId || product.endedAt) continue;
 
       const start = new Date(product.startTime).getTime();
@@ -47,7 +49,15 @@ export class AuctionsService {
           }`,
         );
 
-        // Notification sending hooks in right here, next piece we build
+        // ← this is the line that was a placeholder before
+        if (hasWinner) {
+          await this.notificationsService.notifyUser(
+            product.highestBidderId,
+            '🏆 You Won!',
+            `Congratulations! Your bid of $${product.currentHighestBid} won "${product.title}".`,
+            doc.id,
+          );
+        }
       }
     }
 

@@ -7,6 +7,7 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { AuthModule } from './auth/auth.module';
 import { ProductsModule } from './products/products.module';
 import { AuctionsModule } from './auctions/auctions.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AuctionsModule } from './auctions/auctions.module';
     AuthModule,
     ProductsModule,
     AuctionsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
